@@ -5,4 +5,7 @@ Description=Darksky API fetch
 User=%I
 Restart=always
 RestartSec=600s
-ExecStart=/usr/bin/python3 /home/pi/weather_station/pull.py
+ExecStart=/usr/bin/python3.7 /home/pi/weather_station/pull.py
+
+[Install]
+WantedBy=multi-user.target
