@@ -87,46 +87,45 @@ void setup()
 
 void loop()
 {
-  // Time
-  timeClient.update();
   display.clearDisplay();
-  display.setCursor(0, 0);
-  String hours = String(timeClient.getHours());
-  String mins = String(timeClient.getMinutes());
-  display.println(hours + ":" + mins);
-
-  // Read DHT11
-  TempAndHumidity read_dht = dht.getTempAndHumidity();
-
-  // Print weather stats
-  print_stats(&read_dht);
-
-  // Read BMP180
-//  if (!bmp180.measureTemperature()) Serial.println("No temp on BMP180");
-//  while (!bmp180.hasValue()) delay(100);
-//  if (!bmp180.measurePressure()) Serial.println("No pressure on BMP180");
-//  while (!bmp180.hasValue()) delay(100);
-//  disp += String(bmp180.getPressure()) + " Pa";
-
-  // Wait
-  delay(2000);
+  
+  // Cycle stats
+  int total_stats = 2;
+  for (int i = 0; i < total_stats; i++)
+  {
+    update_time();
+    print_stats(i);
+    delay(3000);
+    display.clearDisplay();
+  }
 }
 
-void print_stats(TempAndHumidity *t)
+void update_time()
 {
-  display.setCursor(0, 18);
-
-  String fahrenheit = String((t->temperature * 1.8 + 32), 1) + "F";
-  String humidity = String(t->humidity, 0) + "%";
-  display.setTextSize(1);
-  display.println("Temperature");
+  timeClient.update();
+  display.setCursor(0, 0);
   display.setTextSize(2);
-  display.println(fahrenheit);
-  display.setTextSize(1);
-  display.println("Humidity");
-  display.setTextSize(2);
-  display.println(humidity);
+  int h = timeClient.getHours();
+  if (h > 12) h -= 12;
+  String hours = String(h);
+  int m = timeClient.getMinutes();
+  String mins = String(m);
+  if (m < 10) mins = "0" + mins;
+  display.print(hours + ":" + mins);
+}
 
+void print_stats(int stat)
+{
+  switch(stat)
+  {
+    case 0:
+      indoor_temp();
+      break;
+    case 1:
+      indoor_humidity();
+    default:
+      break;
+  }
   display.display();
 }
 
@@ -136,4 +135,28 @@ void display_message(String message)
   display.setCursor(0, 0);
   display.println(message);
   display.display();
+}
+
+void indoor_temp()
+{
+  TempAndHumidity read_dht = dht.getTempAndHumidity();
+  display.setTextSize(1);
+  display.setCursor(0, 52);
+  display.print("Indoor temp");
+  display.setCursor(0, 19);
+  String fahrenheit = String((read_dht.temperature * 1.8 + 32), 1) + "F";
+  display.setTextSize(4);
+  display.println(fahrenheit);
+}
+
+void indoor_humidity()
+{
+  TempAndHumidity read_dht = dht.getTempAndHumidity();
+  display.setTextSize(1);
+  display.setCursor(0, 52);
+  display.print("Indoor humidity");
+  display.setCursor(0, 19);
+  String humidity = String(read_dht.humidity, 0) + "%";
+  display.setTextSize(4);
+  display.println(humidity);
 }
