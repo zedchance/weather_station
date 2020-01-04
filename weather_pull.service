@@ -4,5 +4,5 @@ Description=Darksky API fetch
 [Service]
 User=%I
 Restart=always
-RestartSec=1800s
+RestartSec=600s
 ExecStart=/usr/bin/python3 /home/pi/weather_station/pull.py
