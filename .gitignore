@@ -3,4 +3,3 @@ api_auth.h
 keys.py
 __pycache__
 current_conditions
-server
