@@ -1,0 +1,11 @@
+[Unit]
+Description=weather_station server
+
+[Service]
+User=pi
+Restart=always
+RestartSec=15s
+ExecStart=/usr/bin/perl -w /home/pi/weather_station/server/server.pl
+
+[Install]
+WantedBy=multi-user.target
