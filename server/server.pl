@@ -3,10 +3,10 @@
 use strict;
 use Socket;
 
-# Port number 12345
-my $port = 12345;
+# Port number
+my $port = 5000;
 my $proto = getprotobyname('tcp');
-my $server = "raspberrypi";
+my $server = "192.168.50.84";
 
 # Create a socket
 socket(SOCKET, PF_INET, SOCK_STREAM, $proto)
@@ -18,7 +18,7 @@ setsockopt(SOCKET, SOL_SOCKET, SO_REUSEADDR, 1)
 bind(SOCKET, pack_sockaddr_in($port, inet_aton($server)))
 	or die "Can't bind to port $port!\n";
 listen(SOCKET, 5) or die "Listen: $!\n";
-print "SERVER started on port $port.\n";
+print "WEATHER_SERVER started on $server $port.\n";
 
 # Accept incoming connection
 my $client_addr;

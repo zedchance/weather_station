@@ -22,7 +22,7 @@ print("Summary:", current_summary)
 # Write to file
 print("Writing to file current_conditions...")
 file = open("current_conditions", "w")
-file.write(f'{current_temp}\n')
+file.write(f'{current_temp:.1f}F\n')
 file.write(f'{current_humidity * 100}%\n')
 file.write(f'{current_summary}\n')
 file.close()
