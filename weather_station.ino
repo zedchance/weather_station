@@ -22,8 +22,8 @@
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP); // 'pool.ntp.org' is used with 60 seconds update interval
 WiFiClient client;
-const char* host = "raspberrypi";
-const uint16_t port = 1234;
+const char* host = "192.168.50.84"; // raspberrypi
+const uint16_t port = 5000;
 
 // OLED
 #include <Adafruit_SSD1306.h>
@@ -42,6 +42,12 @@ int dhtPin = D0; // Pin number for DHT11 data pin
 #define BMP_ADDRESS 0x77
 BMP180I2C bmp180(BMP_ADDRESS); //create an BMP180 object using the I2C interface
 
+int total_stats;
+unsigned long last_millis = 0;
+String otemp;
+String ohumidity;
+String oconditions;
+
 void setup()
 {
 #ifdef DEBUG
@@ -58,12 +64,7 @@ void setup()
   delay(2000);
 
   // Wifi and time setup
-  display.clearDisplay();
-  display.setTextSize(2);
-  display.setCursor(0, 0);
-  display.print("Connecting");
-  display.display();
-  display.startscrollleft(0x00, 0xFF);
+  display_message("Connecting\nto wifi.");
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
   {
@@ -71,7 +72,8 @@ void setup()
   }
   timeClient.begin();
   timeClient.setTimeOffset(-28800);
-  display.stopscroll();
+  display_message("Connected.");
+  delay(500);
   display.clearDisplay();
 
   // DHT11 Setup
@@ -88,7 +90,7 @@ void setup()
 //  bmp180.setSamplingMode(BMP180MI::MODE_UHR);
 
   // Pull Darksky weather
-  pull_weather();
+  total_stats = pull_weather();
 }
 
 void loop()
@@ -96,7 +98,6 @@ void loop()
   display.clearDisplay();
   
   // Cycle stats
-  int total_stats = 5;
   int pause = 3000;
   for (int i = 0; i < total_stats; i++)
   {
@@ -104,6 +105,15 @@ void loop()
     print_stats(i);
     delay(pause);
     display.clearDisplay();
+  }
+
+  // Check if its time to pull
+  unsigned long wait_duration = 300000;
+  if ((unsigned long)(millis() - last_millis >= wait_duration))
+  {
+    Serial.println("Repull.");
+    total_stats = pull_weather();
+    last_millis = millis();
   }
 }
 
@@ -184,9 +194,8 @@ void outdoor_temp()
   display.setCursor(0, 52);
   display.print("Outdoors temp");
   display.setCursor(0, 19);
-  // get temp
   display.setTextSize(4);
-  display.println("");
+  display.println(otemp);
 }
 
 void outdoor_humidity()
@@ -195,9 +204,8 @@ void outdoor_humidity()
   display.setCursor(0, 52);
   display.print("Outdoors humidity");
   display.setCursor(0, 19);
-  // get humidity
   display.setTextSize(4);
-  display.println("");
+  display.println(ohumidity);
 }
 
 void outdoor_conditions()
@@ -206,27 +214,27 @@ void outdoor_conditions()
   display.setCursor(0, 52);
   display.print("Outdoors conditions");
   display.setCursor(0, 19);
-  // get conditions
-  display.setTextSize(4);
-  display.println("");
+  display.setTextSize(2);
+  display.println(oconditions);
 }
 
-void pull_weather()
+int pull_weather()
 {
   // Connect client to host and check for failure
+  display_message("Pulling\nweather.");
   if (!client.connect(host, port))
   {
-    Serial.println("Connection failed");
-    display_message("Connection\nfailed");
+    Serial.println("Pull failed");
+    display_message("Pull\nfailed");
     delay(5000);
-    return;
+    return 2;
   }
 
   // Make GET request
   if (client.connected())
   {
     // Make request for forecast for Roseville, CA
-    client.println("G");
+    client.println("C");
   }
 
   // Wait for response
@@ -239,18 +247,44 @@ void pull_weather()
       display_message("Client\ntimeout");
       client.stop();
       delay(10000);
-      return;
+      return 2;
     }
   }
 
   // Read response
+  int c = 0;
+  String in = "";
   while (client.available())
   {
     char ch = static_cast<char>(client.read());
+    if (ch == ' ') in += '\n';
+    else if (ch == '\n')
+    {
+      switch (c)
+      {
+        case 0:
+          otemp = in;
+          break;
+        case 1:
+          ohumidity = in;
+          break;
+        case 2:
+          oconditions = in;
+          break;
+      }
+      c++;
+      in = "";
+    }
+    else in += ch;
     Serial.print(ch);
   }
+  display_message("Pulled.");
+  delay(500);
 
   // Close connection
   client.stop();
   Serial.println("Connection closed.");
+
+  // Return full number of stats
+  return 5;
 }
