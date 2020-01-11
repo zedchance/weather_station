@@ -1,7 +1,11 @@
 /*
  * NODE MCU WEATHER STATION
  * Author   Zed Chance
- * 
+ *
+ * Shows the indoor temp and humidity, as well as the outdoor temp/humidity and
+ * conditions. The Node communicates with a Rasbperry Pi, which does the pulling
+ * and serving of the data.
+ *
  * Pin setup
  * DHT11          D0
  * SDA            D1
@@ -20,7 +24,7 @@
 #include <WiFiUdp.h>
 #include "wifi_auth.h"
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP); // 'pool.ntp.org' is used with 60 seconds update interval
+NTPClient timeClient(ntpUDP); // 'pool.ntp.org' for time update
 WiFiClient client;
 const char* host = "192.168.50.84"; // raspberrypi
 const uint16_t port = 5000;
@@ -96,7 +100,7 @@ void setup()
 void loop()
 {
   display.clearDisplay();
-  
+
   // Cycle stats
   int pause = 3000;
   for (int i = 0; i < total_stats; i++)
@@ -237,7 +241,7 @@ int pull_weather()
     client.println("C");
   }
 
-  // Wait for response
+  // Wait 5s for response
   unsigned long timeout = millis();
   while (client.available() == 0)
   {
@@ -251,31 +255,31 @@ int pull_weather()
     }
   }
 
-  // Read response
+  // Read and parse response
   int c = 0;
   String in = "";
-  while (client.available())
+  while (client.available())    // Read in response char by char
   {
     char ch = static_cast<char>(client.read());
-    if (ch == ' ') in += '\n';
-    else if (ch == '\n')
+    if (ch == ' ') in += '\n';  // If there is a space, then add a newline
+    else if (ch == '\n')        // If its a newline, then store it away
     {
       switch (c)
       {
-        case 0:
+        case 0:                 // First part is temp
           otemp = in;
           break;
-        case 1:
+        case 1:                 // Second part is humidity
           ohumidity = in;
           break;
-        case 2:
+        case 2:                 // Finally conditions
           oconditions = in;
           break;
       }
-      c++;
-      in = "";
+      c++;                      // Move to next stat
+      in = "";                  // Reset input string
     }
-    else in += ch;
+    else in += ch;              // Build up input string
     Serial.print(ch);
   }
   display_message("Pulled.");
