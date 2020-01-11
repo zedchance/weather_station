@@ -25,9 +25,9 @@ my $client_addr;
 while ($client_addr = accept(NEW_SOCKET, SOCKET))
 {
 	# Pull new weather and respond
-	`python3.7 pull.py`;
+	`python3.7 /home/pi/weather_station/server/pull.py`;
 	my $name = gethostbyaddr($client_addr, AF_INET);
-	print NEW_SOCKET `cat current_conditions`;
+	print NEW_SOCKET `cat /home/pi/weather_station/server/current_conditions`;
 	print "Connection received from $name.\n";
 	close NEW_SOCKET;
 }
