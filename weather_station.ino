@@ -312,8 +312,8 @@ void pull_weather(int *s)
                 oconditions = in;
                 break;
             }
-        c++;                        // Move to next stat
-        in = "";                    // Reset input string
+            c++;                    // Move to next stat
+            in = "";                // Reset input string
         }
         else in += ch;              // Build up input string
         Serial.print(ch);
