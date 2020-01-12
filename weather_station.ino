@@ -16,14 +16,15 @@
 
 // Modes
 #define DEBUG       // ON/OFF debug statements
-// #define CYCLE       // Cycles thru all stats
-#define TEMP_ONLY   // Shows indoor and outdoor temp
+#define CYCLE       // Cycles thru all stats
+// #define TEMP_ONLY   // Shows indoor and outdoor temp
 
 int total_stats;
 unsigned long last_millis = 0;
 String otemp;
 String ohumidity;
 String oconditions;
+String bot_status_str;
 
 void setup()
 {
@@ -71,8 +72,10 @@ void setup()
     // bmp180.resetToDefaults();
     // bmp180.setSamplingMode(BMP180MI::MODE_UHR);
 
-    // Pull Darksky weather
+    // Pull Darksky weather and bot status
     total_stats = pull_weather();
+    total_stats++;
+    pull_bot_status();
 }
 
 void loop()
@@ -106,6 +109,8 @@ void loop()
     {
         Serial.println("Repull.");
         total_stats = pull_weather();
+        total_stats++;
+        pull_bot_status();
         last_millis = millis();
     }
 }
@@ -142,6 +147,9 @@ void print_stats(int stat)
             break;
         case 4:
             outdoor_conditions();
+            break;
+        case 5:
+            bot_status();
             break;
         default:
             break;
@@ -224,10 +232,20 @@ void both_temps()
     display.println("EX: " + otemp);
 }
 
+void bot_status()
+{
+    display.setTextSize(1);
+    display.setCursor(0, 52);
+    display.print("!b status");
+    display.setCursor(0, 19);
+    display.setTextSize(2);
+    display.println(bot_status_str);
+}
+
 int pull_weather()
 {
     // Connect client to host and check for failure
-    display_message("Pulling\nweather.");
+    display_message("Pulling\nweather");
     if (!client.connect(host, port))
     {
         Serial.println("Pull failed");
@@ -296,4 +314,54 @@ int pull_weather()
 
     // Return full number of stats
     return 5;
+}
+
+void pull_bot_status()
+{
+    display_message("Pulling\nbot status");
+    if (!client.connect(host, port))
+    {
+        Serial.println("Pull failed");
+        display_message("Pull\nfailed");
+        bot_status_str = "N/A";
+        delay(5000);
+    }
+
+    if (client.connected())
+    {
+        // Make request for bot status
+        client.println("BBOT\n");
+    }
+
+    // Wait 5s for response
+    unsigned long timeout = millis();
+    while (client.available() == 0)
+    {
+        if (millis() - timeout > 5000)
+        {
+            Serial.println("CLIENT TIMEOUT!");
+            display_message("Client\ntimeout");
+            client.stop();
+            delay(10000);
+        }
+    }
+
+    // Read and parse response
+    String in = "";
+    while (client.available())      // Read in response char by char
+    {
+        char ch = static_cast<char>(client.read());
+        if (ch == '\n')             // If its a newline, then store it away
+        {
+            bot_status_str = in;
+        }
+        else in += ch;              // Otherwise build up input string
+        Serial.print(ch);
+    }
+    display_message("Pulled.");
+    delay(500);
+
+    // Close connection
+    client.stop();
+    Serial.println("Connection closed.");
 }
