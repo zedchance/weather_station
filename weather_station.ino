@@ -17,7 +17,7 @@
 // Modes
 #define DEBUG       // ON/OFF debug statements
 #define CYCLE       // Cycles thru all stats
-// #define TEMP_ONLY   // Shows indoor and outdoor temp
+// #define DUAL_TEMP   // Shows indoor and outdoor temp
 
 int total_stats;
 unsigned long last_millis = 0;
@@ -94,8 +94,8 @@ void loop()
     }
 #endif
 
-    // Temp only mode
-#ifdef TEMP_ONLY
+    // Shows indoor/outdoor temp constantly
+#ifdef DUAL_TEMP
     update_time();
     both_temps();
     display.display();
@@ -103,8 +103,15 @@ void loop()
     display.clearDisplay();
 #endif
 
+    // Pull time every 30 seconds
+    unsigned long time_wait_duration = 30000;
+    if ((unsigned long)(millis() - last_millis >= time_wait_duration))
+    {
+        timeClient.update();
+    }
+
     // Check if its time to pull
-    unsigned long wait_duration = 300000;
+    unsigned long wait_duration = 300000; // 5 min
     if ((unsigned long)(millis() - last_millis >= wait_duration))
     {
         Serial.println("Repull.");
@@ -117,7 +124,6 @@ void loop()
 
 void update_time()
 {
-    timeClient.update();
     display.setCursor(0, 0);
     display.setTextSize(2);
     int h = timeClient.getHours();
@@ -245,6 +251,7 @@ void bot_status()
 int pull_weather()
 {
     // Connect client to host and check for failure
+    Serial.println("Pulling weather");
     display_message("Pulling\nweather");
     if (!client.connect(host, port))
     {
@@ -318,6 +325,7 @@ int pull_weather()
 
 void pull_bot_status()
 {
+    Serial.println("Pulling bot status");
     display_message("Pulling\nbot status");
     if (!client.connect(host, port))
     {
