@@ -73,6 +73,7 @@ void setup()
     // bmp180.setSamplingMode(BMP180MI::MODE_UHR);
 
     // Pull Darksky weather and bot status
+    total_stats = 2;
     pull_weather(&total_stats);
     pull_bot_status(&total_stats);
 }
@@ -80,6 +81,7 @@ void setup()
 void loop()
 {
     display.clearDisplay();
+    Serial.println(total_stats);
 
     // Cycle mode
 #ifdef CYCLE
@@ -88,7 +90,13 @@ void loop()
     {
         update_time();
         print_stats(i);
-        delay(pause);
+        // Progress bar
+        for (int i = 0; i < 127; i++)
+        {
+            display.drawPixel(i, 63, SSD1306_WHITE);
+            display.display();
+            delay(1);
+        }
         display.clearDisplay();
     }
 #endif
