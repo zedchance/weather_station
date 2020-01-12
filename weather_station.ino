@@ -73,9 +73,8 @@ void setup()
     // bmp180.setSamplingMode(BMP180MI::MODE_UHR);
 
     // Pull Darksky weather and bot status
-    total_stats = pull_weather();
-    total_stats++;
-    pull_bot_status();
+    pull_weather(&total_stats);
+    pull_bot_status(&total_stats);
 }
 
 void loop()
@@ -115,9 +114,9 @@ void loop()
     if ((unsigned long)(millis() - last_millis >= wait_duration))
     {
         Serial.println("Repull.");
-        total_stats = pull_weather();
-        total_stats++;
-        pull_bot_status();
+        total_stats = 2;
+        pull_weather(&total_stats);
+        pull_bot_status(&total_stats);
         last_millis = millis();
     }
 }
@@ -248,7 +247,7 @@ void bot_status()
     display.println(bot_status_str);
 }
 
-int pull_weather()
+void pull_weather(int *s)
 {
     // Connect client to host and check for failure
     Serial.println("Pulling weather");
@@ -261,7 +260,7 @@ int pull_weather()
         ohumidity = "N/A";
         oconditions = "N/A";
         delay(5000);
-        return 2;
+        return;
     }
 
     // Make GET request
@@ -281,7 +280,7 @@ int pull_weather()
             display_message("Client\ntimeout");
             client.stop();
             delay(10000);
-            return 2;
+            return;
         }
     }
 
@@ -312,18 +311,16 @@ int pull_weather()
         else in += ch;              // Build up input string
         Serial.print(ch);
     }
+    *s += 3;                        // Add 3 stats to total
     display_message("Pulled.");
     delay(500);
 
     // Close connection
     client.stop();
     Serial.println("Connection closed.");
-
-    // Return full number of stats
-    return 5;
 }
 
-void pull_bot_status()
+void pull_bot_status(int *s)
 {
     Serial.println("Pulling bot status");
     display_message("Pulling\nbot status");
@@ -333,6 +330,7 @@ void pull_bot_status()
         display_message("Pull\nfailed");
         bot_status_str = "N/A";
         delay(5000);
+        return;
     }
 
     if (client.connected())
@@ -351,6 +349,7 @@ void pull_bot_status()
             display_message("Client\ntimeout");
             client.stop();
             delay(10000);
+            return;
         }
     }
 
@@ -366,6 +365,7 @@ void pull_bot_status()
         else in += ch;              // Otherwise build up input string
         Serial.print(ch);
     }
+    *s += 1;                        // Add 1 stat to total
     display_message("Pulled.");
     delay(500);
 
