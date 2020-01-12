@@ -241,7 +241,7 @@ void outdoor_conditions()
 {
     display.setTextSize(1);
     display.setCursor(0, 52);
-    display.print("Outdoor conditions");
+    display.print("Outside conditions");
     display.setCursor(0, 19);
     display.setTextSize(2);
     display.println(oconditions);
