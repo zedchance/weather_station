@@ -4,7 +4,7 @@ use strict;
 use Socket;
 
 # Port number
-my $port = 5000;
+my $port = shift || 5000;
 my $proto = getprotobyname('tcp');
 my $server = "192.168.50.84";
 
@@ -41,12 +41,18 @@ while ($client_addr = accept(NEW_SOCKET, SOCKET))
             `python3.7 /home/pi/weather_station/server/pull.py`;
             print NEW_SOCKET `cat /home/pi/weather_station/server/current_conditions`;
         }
+        when ("UP")
+        {
+            print NEW_SOCKET `uptime -p`;
+        }
+        when ("BBOT")
+        {
+            print NEW_SOCKET `docker ps --format="{{.Status}}"`;
+        }
         default
         {
             print NEW_SOCKET "ERR\n";
         }
     }
-
-    # Close socket
     close NEW_SOCKET;
 }
