@@ -89,13 +89,7 @@ void loop()
     {
         update_time();
         print_stats(i);
-        // Progress bar
-        for (int i = 0; i < 127; i++)
-        {
-            display.drawPixel(i, 63, SSD1306_WHITE);
-            display.display();
-            delay(1);
-        }
+        progress_bar(i, total_stats);
         display.clearDisplay();
     }
 #endif
@@ -175,6 +169,28 @@ void display_message(String message)
     display.setCursor(0, 0);
     display.println(message);
     display.display();
+}
+
+void progress_bar(int index, int total)
+{
+    // Ticks
+    int chunk = (SCREEN_WIDTH - 1) / total;
+    for (int i = 0; i < SCREEN_WIDTH - 1; i += chunk)
+    {
+        display.drawPixel(i, 62, SSD1306_WHITE);
+    }
+
+    // Progress bar
+    for (int i = 0; i < index * chunk; i++)
+    {
+        display.drawPixel(i, 63, SSD1306_WHITE);
+    }
+    for (int i = index * chunk; i < (index + 1) * chunk; i++)
+    {
+        display.drawPixel(i, 63, SSD1306_WHITE);
+        display.display();
+        delay(250);
+    }
 }
 
 void indoor_temp()
