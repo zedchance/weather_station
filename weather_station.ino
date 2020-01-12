@@ -81,7 +81,6 @@ void setup()
 void loop()
 {
     display.clearDisplay();
-    Serial.println(total_stats);
 
     // Cycle mode
 #ifdef CYCLE
@@ -183,7 +182,7 @@ void indoor_temp()
     TempAndHumidity read_dht = dht.getTempAndHumidity();
     display.setTextSize(1);
     display.setCursor(0, 52);
-    display.print("Indoors temp");
+    display.print("Inside temp");
     display.setCursor(0, 19);
     String fahrenheit = String((read_dht.temperature * 1.8 + 32), 1) + "F";
     display.setTextSize(4);
@@ -195,7 +194,7 @@ void indoor_humidity()
     TempAndHumidity read_dht = dht.getTempAndHumidity();
     display.setTextSize(1);
     display.setCursor(0, 52);
-    display.print("Indoors humidity");
+    display.print("Inside humidity");
     display.setCursor(0, 19);
     String humidity = String(read_dht.humidity, 0) + "%";
     display.setTextSize(4);
@@ -206,7 +205,7 @@ void outdoor_temp()
 {
     display.setTextSize(1);
     display.setCursor(0, 52);
-    display.print("Outdoors temp");
+    display.print("Outside temp");
     display.setCursor(0, 19);
     display.setTextSize(4);
     display.println(otemp);
@@ -216,7 +215,7 @@ void outdoor_humidity()
 {
     display.setTextSize(1);
     display.setCursor(0, 52);
-    display.print("Outdoors humidity");
+    display.print("Outside humidity");
     display.setCursor(0, 19);
     display.setTextSize(4);
     display.println(ohumidity);
@@ -226,7 +225,7 @@ void outdoor_conditions()
 {
     display.setTextSize(1);
     display.setCursor(0, 52);
-    display.print("Outdoors conditions");
+    display.print("Outdoor conditions");
     display.setCursor(0, 19);
     display.setTextSize(2);
     display.println(oconditions);
@@ -241,8 +240,8 @@ void both_temps()
     display.setCursor(0, 19);
     String fahrenheit = String((read_dht.temperature * 1.8 + 32), 1) + "F";
     display.setTextSize(2);
-    display.println("IN: " + fahrenheit);
-    display.println("EX: " + otemp);
+    display.println("I: " + fahrenheit);
+    display.println("O: " + otemp);
 }
 
 void bot_status()
