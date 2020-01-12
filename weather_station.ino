@@ -32,11 +32,16 @@ void setup()
     Serial.println("Starting setup...");
 #endif
 
+    otemp = "N/A";
+    ohumidity = "N/A";
+    oconditions = "N/A";
+
     // OLED Setup
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
     display.setTextColor(WHITE);
     display.setTextSize(2);
     display.cp437(true); //font
+    display.dim(true);
     display_message("OLED\nWEATHER\nSTATION");
     delay(2000);
 
@@ -227,6 +232,9 @@ int pull_weather()
     {
         Serial.println("Pull failed");
         display_message("Pull\nfailed");
+        otemp = "N/A";
+        ohumidity = "N/A";
+        oconditions = "N/A";
         delay(5000);
         return 2;
     }
@@ -235,7 +243,7 @@ int pull_weather()
     if (client.connected())
     {
         // Make request for forecast for Roseville, CA
-        client.println("C");
+        client.println("C\n");
     }
 
     // Wait 5s for response

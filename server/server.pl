@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-
+use v5.14;
 use strict;
 use Socket;
 
@@ -24,10 +24,29 @@ print "WEATHER_SERVER started on $server $port.\n";
 my $client_addr;
 while ($client_addr = accept(NEW_SOCKET, SOCKET))
 {
-    # Pull new weather and respond
-    `python3.7 /home/pi/weather_station/server/pull.py`;
+    # Print connection
     my $name = gethostbyaddr($client_addr, AF_INET);
-    print NEW_SOCKET `cat /home/pi/weather_station/server/current_conditions`;
     print "Connection received from $name.\n";
+
+    # Get input
+    my $req = <NEW_SOCKET>;
+    print("\t" . $name . " : " . $req);
+    chomp($req);
+
+    # Switch on input
+    given ($req)
+    {
+        when ("C")
+        {
+            `python3.7 /home/pi/weather_station/server/pull.py`;
+            print NEW_SOCKET `cat /home/pi/weather_station/server/current_conditions`;
+        }
+        default
+        {
+            print NEW_SOCKET "ERR\n";
+        }
+    }
+
+    # Close socket
     close NEW_SOCKET;
 }
