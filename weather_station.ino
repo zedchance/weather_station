@@ -143,10 +143,10 @@ void print_stats(int stat)
             indoor_temp();
             break;
         case 1:
-            indoor_humidity();
+            outdoor_temp();
             break;
         case 2:
-            outdoor_temp();
+            indoor_humidity();
             break;
         case 3:
             outdoor_humidity();
